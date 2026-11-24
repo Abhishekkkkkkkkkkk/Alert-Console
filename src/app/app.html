@@ -1,0 +1,45 @@
+<div class="app-container">
+  <!-- Executive Navbar matching reference wireframe -->
+  <app-header />
+
+  <!-- Main Split-Pane Workspace -->
+  <main class="main-content">
+    <!-- Left: Filter Bar + Table or Explicit Empty State -->
+    <section class="console-section" aria-label="Alerts Monitoring Grid">
+      <app-filter-bar
+        [filters]="alertService.filters()"
+        [totalCount]="alertService.totalCount()"
+        [filteredCount]="alertService.filteredCount()"
+        (filterChange)="onFilterChange($event)"
+        (clearFilters)="onClearFilters()"
+      />
+
+      @if (alertService.filteredAlerts().length === 0) {
+        <!-- Explicit empty state when filters return 0 results (NOT a blank table) -->
+        <app-empty-state
+          [activeFilterCount]="activeFilterCount()"
+          (clearFilters)="onClearFilters()"
+        />
+      } @else {
+        <!-- Sorts newest-first, color severity chips, keyboard accessible, quick row resolve -->
+        <app-alert-table
+          [alerts]="alertService.filteredAlerts()"
+          [selectedAlertId]="alertService.selectedAlertId()"
+          [inFlightIds]="alertService.inFlightIds()"
+          (selectAlert)="onSelectAlert($event)"
+        />
+      }
+    </section>
+
+    <!-- Right: Detail Panel (Master-Detail View) -->
+    <app-detail-panel
+      [alert]="alertService.selectedAlert()"
+      [isSaving]="alertService.selectedAlert() ? !!alertService.inFlightIds()[alertService.selectedAlert()!.id] : false"
+      (close)="alertService.selectAlert(null)"
+      (resolve)="onResolve($event)"
+    />
+  </main>
+
+  <!-- Floating Toast Notification Stack -->
+  <app-toast-container />
+</div>
