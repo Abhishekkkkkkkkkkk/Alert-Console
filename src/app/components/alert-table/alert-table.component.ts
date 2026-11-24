@@ -34,22 +34,22 @@ import { formatDisplayTimestamp } from '../../data/mock-alerts';
               [attr.aria-selected]="alert.id === selectedAlertId()"
               role="row"
             >
-              <!-- ID Column -->
+              <!-- Alert ID -->
               <td class="td-id font-mono">
                 <span class="id-text">{{ alert.id }}</span>
               </td>
 
-              <!-- Source Column -->
+              <!-- Service source -->
               <td class="td-source">
                 <span class="source-text font-mono">{{ alert.source }}</span>
               </td>
 
-              <!-- Severity Column -->
+              <!-- Severity chip -->
               <td class="td-severity">
                 <app-severity-chip [severity]="alert.severity" />
               </td>
 
-              <!-- Status Column -->
+              <!-- Status chip -->
               <td class="td-status">
                 <app-status-chip
                   [status]="alert.status"
@@ -57,12 +57,12 @@ import { formatDisplayTimestamp } from '../../data/mock-alerts';
                 />
               </td>
 
-              <!-- Created At Column -->
+              <!-- Created date -->
               <td class="td-created text-muted font-mono">
                 {{ formatCreatedAt(alert.createdAt) }}
               </td>
 
-              <!-- Action Column (Resolve Link with Spinner during Save) -->
+              <!-- Quick resolve action -->
               <td class="td-action text-right">
                 @if (inFlightIds()[alert.id]) {
                   <span class="row-saving-text" aria-live="polite">
@@ -86,7 +86,7 @@ import { formatDisplayTimestamp } from '../../data/mock-alerts';
         </tbody>
       </table>
 
-      <!-- Subtext from Reference Wireframe -->
+      <!-- Footer note -->
       <div class="table-footer-note">
         Pagination / virtualization for large lists
       </div>
@@ -221,6 +221,7 @@ export class AlertTableComponent {
 
   public readonly selectAlert = output<string>();
 
+  // Keyboard navigation for table rows
   public onRowKeyDown(e: KeyboardEvent, id: string, index: number): void {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -248,6 +249,7 @@ export class AlertTableComponent {
     }
   }
 
+  // Quick resolve opens the detail panel and focuses input
   public onQuickResolve(e: MouseEvent, id: string): void {
     e.stopPropagation();
     this.selectAlert.emit(id);

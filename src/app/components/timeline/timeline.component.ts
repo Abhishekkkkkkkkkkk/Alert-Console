@@ -13,12 +13,12 @@ import { formatDisplayTimestamp } from '../../data/mock-alerts';
       <div class="timeline-list">
         @for (item of sortedHistory(); track $index; let isLast = $last) {
           <div class="timeline-item">
-            <!-- Vertical connecting line -->
+            <!-- Vertical timeline connector -->
             @if (!isLast) {
               <div class="timeline-track" aria-hidden="true"></div>
             }
 
-            <!-- Colored status dot matching wireframe -->
+            <!-- State indicator dot -->
             <div
               [class]="'timeline-dot dot-' + (item.isOptimistic ? 'pending' : item.state.toLowerCase())"
               aria-hidden="true"
@@ -79,7 +79,7 @@ import { formatDisplayTimestamp } from '../../data/mock-alerts';
       z-index: 2;
       flex-shrink: 0;
     }
-    /* Wireframe dots */
+    /* Timeline dot status colors */
     .dot-open {
       background-color: #3b82f6; /* Blue dot */
     }

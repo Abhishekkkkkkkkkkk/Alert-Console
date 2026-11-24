@@ -1,17 +1,12 @@
-/**
- * Strongly typed domain models for Alert Console
- * Strictly derived from assignment specifications.
- */
+// Alert domain types and validation helpers
 
 export type AlertSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-
 export type AlertStatus = 'OPEN' | 'ESCALATED' | 'AUTO_CLOSED' | 'RESOLVED';
-
 export type AlertSource = 'tracking-svc' | 'billing-svc' | 'auth-svc' | 'notify-svc';
 
 export interface AlertHistoryEntry {
   readonly state: AlertStatus;
-  readonly ts: string; // ISO 8601 string
+  readonly ts: string;
   readonly note?: string;
   readonly isOptimistic?: boolean;
 }
@@ -21,7 +16,7 @@ export interface Alert {
   readonly source: AlertSource;
   readonly severity: AlertSeverity;
   readonly status: AlertStatus;
-  readonly createdAt: string; // ISO 8601 string
+  readonly createdAt: string;
   readonly history: readonly AlertHistoryEntry[];
 }
 
@@ -38,18 +33,12 @@ export interface ToastNotification {
   readonly timestamp: number;
 }
 
-/**
- * Pure domain logic: Checks if an alert is eligible for resolution.
- * Rule: Only OPEN and ESCALATED alerts can be resolved.
- */
+// Only active alerts can be resolved
 export function isAlertResolvable(status: AlertStatus): boolean {
   return status === 'OPEN' || status === 'ESCALATED';
 }
 
-/**
- * Pure domain logic: Validates a resolution note.
- * Rule: Note is mandatory and cannot be empty or whitespace-only.
- */
+// Make sure the resolution note has actual content
 export function validateResolutionNote(note: string | null | undefined): {
   readonly valid: boolean;
   readonly error?: string;

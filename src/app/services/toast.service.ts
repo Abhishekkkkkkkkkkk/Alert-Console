@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { ToastNotification } from '../models/alert.model';
 
+// Simple toast notification service using signals
 @Injectable({
   providedIn: 'root'
 })
@@ -18,6 +19,7 @@ export class ToastService {
 
     this._toasts.update((current) => [...current, newToast]);
 
+    // Auto-dismiss after duration
     if (duration > 0) {
       setTimeout(() => {
         this.remove(id);

@@ -34,7 +34,7 @@ export class App {
     );
   });
 
-  // Keyboard accessibility: Escape to dismiss detail panel
+  // Press Escape to close detail panel
   @HostListener('window:keydown', ['$event'])
   public handleGlobalKey(e: KeyboardEvent): void {
     if (e.key === 'Escape' && this.alertService.selectedAlertId()) {
@@ -58,7 +58,7 @@ export class App {
     try {
       await this.alertService.resolveAlert(payload.alertId, payload.note);
     } catch {
-      // In case of error (optimistic rollback), the error toast is fired by alertService
+      // Handled by alertService toast
     }
   }
 }

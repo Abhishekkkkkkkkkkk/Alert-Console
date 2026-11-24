@@ -16,7 +16,7 @@ import { AlertFilters } from '../../models/alert.model';
 
       <div class="filter-bar" role="search" aria-label="Alert filter controls">
         <div class="filter-group">
-          <!-- Status Dropdown -->
+          <!-- Status filter -->
           <div class="filter-item">
             <label for="filter-status" class="visually-hidden">Filter by Status</label>
             <select
@@ -35,7 +35,7 @@ import { AlertFilters } from '../../models/alert.model';
             </select>
           </div>
 
-          <!-- Severity Dropdown -->
+          <!-- Severity filter -->
           <div class="filter-item">
             <label for="filter-severity" class="visually-hidden">Filter by Severity</label>
             <select
@@ -54,7 +54,7 @@ import { AlertFilters } from '../../models/alert.model';
             </select>
           </div>
 
-          <!-- Source Dropdown -->
+          <!-- Source filter -->
           <div class="filter-item">
             <label for="filter-source" class="visually-hidden">Filter by Source Service</label>
             <select
@@ -73,7 +73,7 @@ import { AlertFilters } from '../../models/alert.model';
             </select>
           </div>
 
-          <!-- One-click Clear Filters Action -->
+          <!-- Clear filters button -->
           @if (isAnyFilterActive()) {
             <button
               type="button"

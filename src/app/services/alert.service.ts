@@ -9,28 +9,18 @@ import {
 import { generateMockAlerts } from '../data/mock-alerts';
 import { ToastService } from './toast.service';
 
-/**
- * AlertService: Authoritative Central State Management for Alert Console.
- *
- * Implements:
- * 1. Master state for ~60 alerts generated at startup (sorted newest-first).
- * 2. Combinable dropdown filters (status, severity, source) with AND semantics.
- * 3. Master-detail selection tracking with consistency guarantee.
- * 4. Concurrency protection via inFlightIds lock.
- * 5. Resolution flow with 800ms async simulated save.
- * 6. Optimistic UI update with automatic state rollback on failure (Stretch Goal).
- */
+// State management for alerts, filtering, and resolution
 @Injectable({
   providedIn: 'root'
 })
 export class AlertService {
   private readonly toastService = inject(ToastService);
 
-  // Master alerts signal (~60 items generated at startup, sorted newest-first)
+  // Initial alerts generated at startup
   private readonly _alerts = signal<readonly Alert[]>(generateMockAlerts(60));
   public readonly alerts = this._alerts.asReadonly();
 
-  // Multi-criteria combinable filters signal (AND semantics)
+  // Active filter dropdown state
   private readonly _filters = signal<AlertFilters>({
     status: 'ALL',
     severity: 'ALL',
@@ -38,22 +28,22 @@ export class AlertService {
   });
   public readonly filters = this._filters.asReadonly();
 
-  // Master-Detail selection: ID of the currently inspected alert
+  // Selected alert id for the detail panel
   private readonly _selectedAlertId = signal<string | null>(null);
   public readonly selectedAlertId = this._selectedAlertId.asReadonly();
 
-  // Map tracking in-flight asynchronous operations: { [alertId]: boolean }
+  // Tracks alerts currently being saved
   private readonly _inFlightIds = signal<Record<string, boolean>>({});
   public readonly inFlightIds = this._inFlightIds.asReadonly();
 
-  // Rollback snapshots cache for optimistic reversions
+  // Previous states saved for rollback
   private readonly rollbackSnapshots: Record<string, Alert> = {};
 
-  // Stretch Goal failure rate: defaults to 20% random failure
+  // 20% random failure rate per stretch goal
   public failureRate = 0.20;
 
   constructor() {
-    // Select AL-898 by default matching the reference wireframe
+    // Default to AL-898 matching the wireframe
     const initial = this._alerts();
     const wireframeMatch = initial.find((a) => a.id === 'AL-898');
     if (wireframeMatch) {
@@ -63,19 +53,14 @@ export class AlertService {
     }
   }
 
-  /**
-   * Computed: Selected alert entity.
-   * Derives directly from `_alerts` so any mutation automatically syncs with the Detail Panel.
-   */
+  // Current alert shown in the detail panel
   public readonly selectedAlert = computed<Alert | null>(() => {
     const id = this._selectedAlertId();
     if (!id) return null;
     return this._alerts().find((a) => a.id === id) ?? null;
   });
 
-  /**
-   * Computed: Filtered alerts matching all non-'ALL' criteria (AND semantics).
-   */
+  // Combined AND filter evaluation
   public readonly filteredAlerts = computed<readonly Alert[]>(() => {
     const list = this._alerts();
     const f = this._filters();
@@ -91,9 +76,7 @@ export class AlertService {
   public readonly totalCount = computed(() => this._alerts().length);
   public readonly filteredCount = computed(() => this.filteredAlerts().length);
 
-  /**
-   * Update a filter criterion
-   */
+  // Update a single filter field
   public setFilter(key: keyof AlertFilters, value: string): void {
     this._filters.update((prev) => ({
       ...prev,
@@ -101,9 +84,7 @@ export class AlertService {
     }));
   }
 
-  /**
-   * One-click clear filters back to 'ALL'
-   */
+  // Reset all filters back to ALL
   public clearFilters(): void {
     this._filters.set({
       status: 'ALL',
@@ -112,23 +93,12 @@ export class AlertService {
     });
   }
 
-  /**
-   * Select an alert for Master-Detail inspection
-   */
+  // Select an alert by ID
   public selectAlert(id: string | null): void {
     this._selectedAlertId.set(id);
   }
 
-  /**
-   * Resolves an alert with an operator note.
-   *
-   * Core Task 4 & Edge Cases:
-   * 1. Rejects whitespace-only note
-   * 2. Guards against double-submits while saving
-   * 3. Performs OPTIMISTIC UI update instantly
-   * 4. Simulates 800ms async backend save
-   * 5. If rejected (~20% chance), rolls back state and triggers error toast
-   */
+  // Handles optimistic alert resolution and rollback on failure
   public async resolveAlert(alertId: string, noteText: string): Promise<void> {
     const validation = validateResolutionNote(noteText);
     if (!validation.valid) {
@@ -136,7 +106,7 @@ export class AlertService {
     }
     const trimmedNote = (noteText ?? '').trim();
 
-    // Guard: Prevent double-submit
+    // Prevent multiple clicks while saving
     if (this._inFlightIds()[alertId]) {
       return;
     }
@@ -150,15 +120,14 @@ export class AlertService {
       throw new Error(`Alert ${alertId} is already ${currentAlert.status} and cannot be resolved.`);
     }
 
-    // 1. Snapshot previous state for rollback
+    // Save snapshot before mutating state
     const snapshot: Alert = JSON.parse(JSON.stringify(currentAlert));
     this.rollbackSnapshots[alertId] = snapshot;
 
-    // 2. Mark in-flight
+    // Mark alert as in-flight
     this._inFlightIds.update((prev) => ({ ...prev, [alertId]: true }));
 
-    // 3. OPTIMISTIC UPDATE:
-    // Flip status to RESOLVED and append pending entry immediately
+    // Optimistically update status to RESOLVED
     const optimisticTimestamp = new Date().toISOString();
     const optimisticEntry: AlertHistoryEntry = {
       state: 'RESOLVED',
@@ -180,11 +149,11 @@ export class AlertService {
       })
     );
 
-    // 4. Dispatch simulated async save (800ms)
+    // Simulate 800ms save
     try {
       await this.mockSaveResolution(alertId, trimmedNote);
 
-      // SUCCESS: Clear optimistic flag
+      // Save succeeded, confirm optimistic update
       this._alerts.update((prevAlerts) =>
         prevAlerts.map((item) => {
           if (item.id === alertId) {
@@ -202,7 +171,7 @@ export class AlertService {
       delete this.rollbackSnapshots[alertId];
       this.toastService.success(`Alert ${alertId} marked as RESOLVED.`);
     } catch (err: unknown) {
-      // FAILURE: ROLLBACK OPTIMISTIC UPDATE (Stretch Goal Requirement)
+      // Save failed, restore previous snapshot
       const previousState = this.rollbackSnapshots[alertId];
       if (previousState) {
         this._alerts.update((prevAlerts) =>
@@ -216,7 +185,7 @@ export class AlertService {
       this.toastService.error(`Failed to resolve ${alertId}: ${errorMessage}`);
       throw err;
     } finally {
-      // Release in-flight lock
+      // Clear in-flight lock
       this._inFlightIds.update((prev) => {
         const next = { ...prev };
         delete next[alertId];
@@ -225,9 +194,7 @@ export class AlertService {
     }
   }
 
-  /**
-   * Mock save resolution matching specification (800ms delay + stretch goal failure simulation)
-   */
+  // Simulated async save with 800ms delay
   public mockSaveResolution(id: string, note: string): Promise<{ id: string; note: string }> {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
@@ -241,7 +208,7 @@ export class AlertService {
         } else {
           resolve({ id, note });
         }
-      }, 800); // 800 ms delay strictly per specification
+      }, 800); // 800ms simulated network delay
     });
   }
 }

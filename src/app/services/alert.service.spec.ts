@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { AlertService } from './alert.service';
 import { ToastService } from './toast.service';
 
-describe('AlertService (Central State & Business Logic)', () => {
+describe('AlertService', () => {
   let service: AlertService;
 
   beforeEach(() => {
@@ -18,7 +18,7 @@ describe('AlertService (Central State & Business Logic)', () => {
     vi.useRealTimers();
   });
 
-  describe('Initialization & Master-Detail Default Selection', () => {
+  describe('Initialization', () => {
     it('should initialize with ~60 alerts sorted newest-first', () => {
       const alerts = service.alerts();
       expect(alerts.length).toBe(60);
@@ -41,7 +41,7 @@ describe('AlertService (Central State & Business Logic)', () => {
     });
   });
 
-  describe('Filtering with Multi-Criteria AND Semantics', () => {
+  describe('Filtering', () => {
     it('should filter by single criterion (severity=HIGH)', () => {
       service.setFilter('severity', 'HIGH');
       const filtered = service.filteredAlerts();
@@ -101,7 +101,7 @@ describe('AlertService (Central State & Business Logic)', () => {
     });
   });
 
-  describe('Resolution Flow: Validation & Preconditions', () => {
+  describe('Resolution Validation', () => {
     it('should reject whitespace-only resolution note', async () => {
       await expect(service.resolveAlert('AL-898', '   ')).rejects.toThrow(
         /whitespace only/
@@ -137,14 +137,14 @@ describe('AlertService (Central State & Business Logic)', () => {
     });
   });
 
-  describe('Resolution Flow: Happy Path & Optimistic Update', () => {
+  describe('Optimistic Resolution', () => {
     it('should apply optimistic update immediately, then complete save after 800ms', async () => {
       service.failureRate = 0;
       const targetId = 'AL-898';
 
       const resolvePromise = service.resolveAlert(targetId, 'Restarted consumer group');
 
-      // 1. Immediately: status should be RESOLVED (optimistic)
+      // Status flips to RESOLVED immediately
       const optimisticAlert = service.alerts().find((a) => a.id === targetId);
       expect(optimisticAlert?.status).toBe('RESOLVED');
       expect(service.inFlightIds()[targetId]).toBe(true);
@@ -154,11 +154,11 @@ describe('AlertService (Central State & Business Logic)', () => {
       expect(latestHistory?.note).toBe('Restarted consumer group');
       expect(latestHistory?.isOptimistic).toBe(true);
 
-      // 2. Fast forward 800ms
+      // Advance past the 800ms timer
       await vi.advanceTimersByTimeAsync(800);
       await resolvePromise;
 
-      // 3. Post-save: isOptimistic flag cleared, lock released
+      // Save complete, lock released
       const savedAlert = service.alerts().find((a) => a.id === targetId);
       expect(savedAlert?.status).toBe('RESOLVED');
       expect(service.inFlightIds()[targetId]).toBeUndefined();
@@ -183,14 +183,14 @@ describe('AlertService (Central State & Business Logic)', () => {
     });
   });
 
-  describe('Resolution Flow: Concurrency & Edge Cases', () => {
+  describe('Concurrency and Edge Cases', () => {
     it('should preserve in-flight update when user changes filters while save is running', async () => {
       service.failureRate = 0;
       const targetId = 'AL-898';
 
       const promise = service.resolveAlert(targetId, 'Async note');
 
-      // User changes filters while save is in flight
+      // Filter change while save is running
       service.setFilter('status', 'RESOLVED');
 
       const filtered = service.filteredAlerts();
@@ -209,24 +209,24 @@ describe('AlertService (Central State & Business Logic)', () => {
 
       const promise = service.resolveAlert(targetId, 'Resolving 898');
 
-      // Operator clicks on another alert while save is running
+      // Selecting another row during save
       service.selectAlert('AL-901');
       expect(service.selectedAlertId()).toBe('AL-901');
 
       await vi.advanceTimersByTimeAsync(800);
       await promise;
 
-      // AL-898 must be resolved
+      // AL-898 resolved
       const alert898 = service.alerts().find((a) => a.id === 'AL-898');
       expect(alert898?.status).toBe('RESOLVED');
 
-      // AL-901 must remain unchanged
+      // AL-901 unchanged
       const alert901 = service.alerts().find((a) => a.id === 'AL-901');
       expect(alert901?.status).toBe('OPEN');
     });
   });
 
-  describe('Stretch Goal: Failure Simulation & Optimistic Rollback', () => {
+  describe('Optimistic Rollback on Failure', () => {
     it('should roll back alert state and remove optimistic history entry when save fails', async () => {
       service.failureRate = 1.0;
       const targetId = 'AL-898';
@@ -236,15 +236,15 @@ describe('AlertService (Central State & Business Logic)', () => {
 
       const promise = service.resolveAlert(targetId, 'This will fail');
 
-      // Optimistically updated
+      // Optimistic update applied
       expect(service.alerts().find((a) => a.id === targetId)?.status).toBe('RESOLVED');
 
-      // Advance timers to trigger simulated 503 error
+      // Advance timer to trigger simulated error
       const advancePromise = vi.advanceTimersByTimeAsync(800);
       await expect(promise).rejects.toThrow();
       await advancePromise;
 
-      // Rollback verified: status restored to original
+      // Verify rollback to original state
       const rolledBackAlert = service.alerts().find((a) => a.id === targetId)!;
       expect(rolledBackAlert.status).toBe(originalStatus);
       expect(rolledBackAlert.history.length).toBe(originalHistoryCount);

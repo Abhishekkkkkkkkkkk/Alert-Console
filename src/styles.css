@@ -1,10 +1,6 @@
-/* ==========================================================================
-   Alert Console — Observability Dashboard Design System
-   Strictly aligned with MoveInSync Reference Wireframe
-   ========================================================================== */
-
+/* Global theme variables and base styles */
 :root {
-  /* Wireframe Theme (Clean White & Slate Grid) */
+  /* Theme colors */
   --bg-app: #f1f5f9;
   --bg-surface: #ffffff;
   --bg-surface-elevated: #f8fafc;
@@ -16,8 +12,7 @@
   --text-secondary: #475569;
   --text-muted: #64748b;
 
-  /* Severity Specification Colors (Matching Reference Wireframe Exactly) */
-  /* CRITICAL: dark red */
+  /* Severity colors */
   --sev-critical-bg: #881337;
   --sev-critical-border: #701a75;
   --sev-critical-text: #ffffff;
@@ -41,7 +36,7 @@
   --sev-low-text: #ffffff;
   --sev-low-dot: #15803d;
 
-  /* Status Colors (Matching Reference Wireframe Exactly) */
+  /* Status colors */
   --status-open-bg: #2563eb;
   --status-open-border: #1d4ed8;
   --status-open-text: #ffffff;
@@ -58,7 +53,7 @@
   --status-resolved-border: #059669;
   --status-resolved-text: #ffffff;
 
-  /* Accents & Highlights */
+  /* Accents and shadows */
   --accent-primary: #2563eb;
   --accent-primary-hover: #1d4ed8;
   --accent-focus: rgba(37, 99, 235, 0.3);
@@ -71,7 +66,7 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
-/* Reset & Base */
+/* Base reset */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -88,13 +83,13 @@ body {
   min-height: 100vh;
 }
 
-/* Typography Utilities */
+/* Typography */
 .font-mono { font-family: var(--font-mono); }
 .font-bold { font-weight: 600; }
 .text-muted { color: var(--text-muted); }
 .text-right { text-align: right; }
 
-/* Main App Wrapper */
+/* Layout */
 .app-container {
   display: flex;
   flex-direction: column;
@@ -102,7 +97,7 @@ body {
   background-color: var(--bg-app);
 }
 
-/* Main Layout Grid */
+/* Two-column layout */
 .main-content {
   display: grid;
   grid-template-columns: 1fr 420px;
@@ -121,7 +116,7 @@ body {
   }
 }
 
-/* Console Left Section */
+/* Table section */
 .console-section {
   display: flex;
   flex-direction: column;

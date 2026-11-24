@@ -29,7 +29,7 @@ import { Alert, validateResolutionNote } from '../../models/alert.model';
               [attr.aria-describedby]="validationError() ? 'error-' + alert().id : null"
             />
 
-            <!-- Inline validation error message — strictly NO alert() -->
+            <!-- Validation error message -->
             @if (validationError()) {
               <div
                 [id]="'error-' + alert().id"
@@ -42,7 +42,7 @@ import { Alert, validateResolutionNote } from '../../models/alert.model';
             }
           </div>
 
-          <!-- Resolve Button with 800ms Spinner -->
+          <!-- Submit button -->
           <button
             type="submit"
             class="resolve-btn"
@@ -132,7 +132,7 @@ import { Alert, validateResolutionNote } from '../../models/alert.model';
     .resolve-btn.btn-loading {
       background: #047857;
     }
-    /* Animated Loading Spinner */
+    /* Loading spinner */
     .spinner-ring {
       width: 16px;
       height: 16px;
@@ -178,7 +178,7 @@ export class ResolveFormComponent {
   private currentAlertId = '';
 
   constructor() {
-    // Reset form state cleanly whenever the selected alert changes
+    // Clear input when switching alerts
     effect(() => {
       const id = this.alert().id;
       if (id !== this.currentAlertId) {
@@ -189,10 +189,7 @@ export class ResolveFormComponent {
     });
   }
 
-  /**
-   * The form remains visible for OPEN/ESCALATED alerts,
-   * AND remains mounted while saving so the operator clearly sees the 800ms spinner.
-   */
+  // Keep form visible while saving or when alert can be resolved
   public canResolve(): boolean {
     const s = this.alert().status;
     return s === 'OPEN' || s === 'ESCALATED' || this.isSaving();
@@ -207,7 +204,7 @@ export class ResolveFormComponent {
   public handleSubmit(): void {
     const validation = validateResolutionNote(this.noteText);
 
-    // Edge Case: "Whitespace-only note blocked with an inline message."
+    // Block empty or whitespace notes
     if (!validation.valid) {
       this.validationError.set(validation.error ?? 'Resolution note is required.');
       return;

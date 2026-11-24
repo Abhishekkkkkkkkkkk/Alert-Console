@@ -3,10 +3,7 @@ import { Alert, AlertSeverity, AlertStatus, AlertSource, AlertHistoryEntry } fro
 const SEVERITIES: readonly AlertSeverity[] = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
 const SOURCES: readonly AlertSource[] = ['tracking-svc', 'billing-svc', 'auth-svc', 'notify-svc'];
 
-/**
- * Format a Date object to exact UTC string (e.g. "17 Aug 22:10")
- * matching the assignment wireframe specification.
- */
+// Formats ISO string into "DD MMM HH:mm" in UTC
 export function formatDisplayTimestamp(isoString: string): string {
   if (!isoString) return '—';
   try {
@@ -23,14 +20,7 @@ export function formatDisplayTimestamp(isoString: string): string {
   }
 }
 
-/**
- * Generates an initial dataset of ~60 mock alerts matching specification schema.
- * Seeds with the reference wireframe alerts first for visual consistency.
- * Guarantees that:
- * 1. Current status strictly equals the state of the final history entry.
- * 2. History entries are strictly chronologically ordered.
- * 3. Alerts are returned sorted newest-first.
- */
+// Creates mock alerts sorted newest first
 export function generateMockAlerts(count = 60): Alert[] {
   const wireframeAlerts: Alert[] = [
     {
@@ -190,6 +180,6 @@ export function generateMockAlerts(count = 60): Alert[] {
 
   const allAlerts = [...wireframeAlerts, ...generatedAlerts];
 
-  // Core Task 1: Rows sorted newest-first by createdAt
+  // Sort newest first
   return allAlerts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }

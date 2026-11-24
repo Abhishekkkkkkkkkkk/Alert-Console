@@ -27,7 +27,6 @@ import { Component, input, computed, ChangeDetectionStrategy } from '@angular/co
       white-space: nowrap;
       color: #ffffff;
     }
-    /* Exact Wireframe Colors conforming to accessibility guidelines */
     /* CRITICAL: dark red */
     .severity-critical {
       background-color: #7f1d1d;
@@ -36,7 +35,7 @@ import { Component, input, computed, ChangeDetectionStrategy } from '@angular/co
     .severity-high {
       background-color: #ef4444;
     }
-    /* MEDIUM: yellow/amber */
+    /* MEDIUM: yellow */
     .severity-medium {
       background-color: #d97706;
     }

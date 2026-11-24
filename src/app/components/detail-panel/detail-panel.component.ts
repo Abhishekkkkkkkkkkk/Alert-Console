@@ -18,7 +18,7 @@ import { ResolveFormComponent } from '../resolve-form/resolve-form.component';
       </aside>
     } @else {
       <aside class="detail-card" aria-labelledby="detail-panel-title" role="region">
-        <!-- Panel Header (Exactly "AL-898 — detail" on one line) -->
+        <!-- Panel header -->
         <div class="panel-header">
           <h3 id="detail-panel-title" class="panel-title">
             {{ alert()!.id }} — detail
@@ -26,17 +26,17 @@ import { ResolveFormComponent } from '../resolve-form/resolve-form.component';
         </div>
 
         <div class="panel-body">
-          <!-- Timeline Section -->
+          <!-- State history timeline -->
           <app-timeline [history]="alert()!.history" />
 
-          <!-- Resolution Flow Section -->
+          <!-- Resolve action form -->
           <app-resolve-form
             [alert]="alert()!"
             [isSaving]="isSaving()"
             (resolve)="resolve.emit($event)"
           />
 
-          <!-- Optimistic Update Callout Card (Direct 1:1 match to reference wireframe) -->
+          <!-- Optimistic update notice -->
           <div class="optimistic-callout-card" role="note" aria-label="Optimistic update explanation">
             <h5 class="callout-heading">Optimistic update</h5>
             <p class="callout-body">
@@ -97,7 +97,7 @@ import { ResolveFormComponent } from '../resolve-form/resolve-form.component';
       display: flex;
       flex-direction: column;
     }
-    /* Optimistic Callout Box (Exact match to reference wireframe) */
+    /* Optimistic update notice */
     .optimistic-callout-card {
       background: #eff6ff;
       border: 1px solid #bfdbfe;
