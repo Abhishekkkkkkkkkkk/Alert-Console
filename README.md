@@ -219,9 +219,3 @@ Test Files  5 passed (5)
 - Active async states announce `aria-busy="true"`.
 - Keyboard navigation: Full row navigation with Arrow keys and Escape key support.
 - All severity and status color chips meet or exceed the **4.5:1** contrast ratio requirement.
-
----
-
-## 📄 License
-
-This project was built as a technical assignment and is available under the [MIT License](LICENSE).
